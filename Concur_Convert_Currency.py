@@ -1,8 +1,5 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import numpy as np
-import matplotlib
 from matplotlib import pyplot as plt
 import requests
 import sqlite3
