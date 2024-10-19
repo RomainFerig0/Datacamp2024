@@ -24,7 +24,7 @@ def create_users_table():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password BLOB NOT NULL  -- Store the password hash as bytes (BLOB)
+            password BLOB NOT NULL
         )
     ''')
     conn.commit()
@@ -123,7 +123,6 @@ def get_historical_data(base_currency, target_currency, date):
         if response.status_code in [200, 201, 202, 203]:
             return response.json()
         else:
-            st.write(base_currency, target_currency, url)
             st.error(f"Failed to retrieve data. Status code: {response.status_code}")
             return None
     except Exception as e:
@@ -163,22 +162,31 @@ country = ['USD', 'EUR', 'AUD', 'CAD', 'GBP', 'JPY', 'CHF', 'AFN', 'ALL', 'DZD',
            'AMD', 'AWG', 'AZN', 'BSD', 'BHD', 'BDT', 'BBD', 'BYR', 'BZD', 'BMD', 'BTN', 'BOB', 'BAM', 
            'BWP', 'BRL', 'BND', 'BGN', 'KHR', 'INR', 'CNY', 'MXN']
 
+if "show_converter" not in st.session_state:
+    st.session_state.show_converter = False
 
-
+if "show_historical" not in st.session_state:
+    st.session_state.show_historical = False
 
 st.set_page_config(page_title="Currency Converter", page_icon="💱")
-st.sidebar.title("Currency Converter")
-st.sidebar.write("Use the main section to select currencies and convert amounts.")
 
 if "open_session" not in st.session_state:
     st.session_state.open_session = False
     
 if st.session_state.open_session :
     
-    st.title("Welcome")
-    st.sidebar.header("Sections: ")
-    
+    st.title("Welcome to ConCur !")    
     st.write("### Currency info")
+    st.sidebar.header("Sections: ")
+    st.sidebar.title("""
+                                                                   
+    [Currency converter](#currency-conversion)  
+    Use the main section to select currencies and convert amounts.
+
+    [Currency information](#currency-info)  
+
+    [Historical exchange rate](#historical-exchange-rate-trend)
+                     """)
 
     target_currency_info = st.selectbox("Select currency", country)
     if st.button("Search"):
@@ -187,79 +195,79 @@ if st.session_state.open_session :
             symbol = currency_data['data'][target_currency_info]['symbol']
             name = currency_data['data'][target_currency_info]['name']
             name_plural = currency_data['data'][target_currency_info]['name_plural']
-
+            st.session_state.show_converter = not st.session_state.show_converter
             st.write(f"""
                      Currency : {name}   
                      Currency (plural) : {name_plural}  
                      Symbol : {symbol}  
                      """)
                      
-            
-            
-    st.write("### Currency Conversion")
-
-    base_currency = st.selectbox("Select base currency", country)
-    target_currency = st.selectbox("Select target currency", country)
-
-    # Input field for the amount to convert
-    amount = st.number_input("Enter amount to convert", min_value=0.0, step=0.01)
-
-    # Perform the conversion based on selected currencies (for today's rate)
-    if st.button("Convert"):
-        today = datetime.date.today().strftime('%Y-%m-%d')
-        latest_data = get_data(base_currency, target_currency)
-        if latest_data:
-            rate = latest_data['data'][target_currency]
-            converted_amount = amount * rate
-            st.write(f"{amount} {base_currency} is equal to {converted_amount:.2f} {target_currency}")
-
-    # Historical exchange rate plot
-    st.write("### Historical Exchange Rate Trend")
-
-    # Select date range for historical data
-    start_date = st.date_input("Start date", datetime.date.today() - datetime.timedelta(days=30))
-    end_date = st.date_input("End date", datetime.date.today())
-
-    # Fetch and plot historical data
-    dates = pd.date_range(start=start_date, end=end_date)
-    exchange_rates = []
-    valid_dates = []  # To track the dates where we successfully fetch data
-
-    if st.button("Do it"):
+       
+    if st.session_state.show_converter:
+         
+        st.write("### Currency Conversion")
     
-        for date in dates:
-            date_str = date.strftime('%Y-%m-%d')
-            historical_data = get_historical_data(base_currency, target_currency, date_str)
-            if historical_data:
-                try:
-                    rate = historical_data['data'][date_str][target_currency]
-                    exchange_rates.append(rate)
-                    valid_dates.append(date)  # Only append dates where data is valid
-                except KeyError:
-                    st.warning(f"No data available for {date_str}")
+        base_currency = st.selectbox("Select base currency", country)
+        target_currency = st.selectbox("Select target currency", country)
+    
+        # Input field for the amount to convert
+        amount = st.number_input("Enter amount to convert", min_value=0.0, step=1.0)
+    
+        # Perform the conversion based on selected currencies (for today's rate)
+        if st.button("Convert"):
+            today = datetime.date.today().strftime('%Y-%m-%d')
+            latest_data = get_data(base_currency, target_currency)
+            if latest_data:
+                rate = latest_data['data'][target_currency]
+                converted_amount = amount * rate
+                st.session_state.show_historical = not st.session_state.show_historical
+                st.write(f"{amount} {base_currency} is equal to {converted_amount:.2f} {target_currency}")
+       
+    if st.session_state.show_historical:
 
-    # Create a DataFrame for easier manipulation, ensuring both lists have the same length
-    if exchange_rates and valid_dates:
-        df = pd.DataFrame({
-            'Date': valid_dates,
-            'Exchange Rate': exchange_rates
-        })
-
-        # Plot the data using Matplotlib
-        fig, ax = plt.subplots()
-        ax.plot(df['Date'], df['Exchange Rate'], label=f'{base_currency} to {target_currency}')
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Exchange Rate')
-        ax.set_title(f'Exchange Rate Trend: {base_currency} to {target_currency}')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-
-        # Display the plot in Streamlit
-        st.pyplot(fig)
-    else:
-        st.write("No valid data found for the selected date range.")
-
-    st.button('Rerun')
+        # Historical exchange rate plot
+        st.write("### Historical Exchange Rate Trend")
+    
+        # Select date range for historical data
+        start_date = st.date_input("Start date", datetime.date.today() - datetime.timedelta(days=30))
+        end_date = st.date_input("End date", datetime.date.today())
+    
+        # Fetch and plot historical data
+        dates = pd.date_range(start=start_date, end=end_date)
+        exchange_rates = []
+        valid_dates = []  # To track the dates where we successfully fetch data
+    
+        if st.button("Generate evolution"):
+        
+            for date in dates:
+                date_str = date.strftime('%Y-%m-%d')
+                historical_data = get_historical_data(base_currency, target_currency, date_str)
+                if historical_data:
+                    try:
+                        rate = historical_data['data'][date_str][target_currency]
+                        exchange_rates.append(rate)
+                        valid_dates.append(date)  # Only append dates where data is valid
+                    except KeyError:
+                        st.warning(f"No data available for {date_str}")
+    
+        # Create a DataFrame for easier manipulation, ensuring both lists have the same length
+        if exchange_rates and valid_dates:
+            df = pd.DataFrame({
+                'Date': valid_dates,
+                'Exchange Rate': exchange_rates
+            })
+    
+            # Plot the data using Matplotlib
+            fig, ax = plt.subplots()
+            ax.plot(df['Date'], df['Exchange Rate'], label=f'{base_currency} to {target_currency}')
+            ax.set_xlabel('Date')
+            ax.set_ylabel('Exchange Rate')
+            ax.set_title(f'Exchange Rate Trend: {base_currency} to {target_currency}')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+    
+            # Display the plot in Streamlit
+            st.pyplot(fig)
 
 else :
     # Streamlit UI for user authentication
