@@ -157,6 +157,7 @@ def get_currency_info(target_currency):
         return None
 
 #%%
+
 # Dropdowns for base and target currencies
 country = ['USD', 'EUR', 'AUD', 'CAD', 'GBP', 'JPY', 'CHF', 'AFN', 'ALL', 'DZD', 'AOA', 'ARS', 
            'AMD', 'AWG', 'AZN', 'BSD', 'BHD', 'BDT', 'BBD', 'BYR', 'BZD', 'BMD', 'BTN', 'BOB', 'BAM', 
@@ -195,19 +196,19 @@ if st.session_state.open_session :
             symbol = currency_data['data'][target_currency_info]['symbol']
             name = currency_data['data'][target_currency_info]['name']
             name_plural = currency_data['data'][target_currency_info]['name_plural']
-            st.session_state.show_converter = not st.session_state.show_converter
             st.write(f"""
                      Currency : {name}   
                      Currency (plural) : {name_plural}  
                      Symbol : {symbol}  
                      """)
-                     
+    if st.button("Confirm"):
+        st.session_state.show_converter = not st.session_state.show_converter
        
     if st.session_state.show_converter:
          
         st.write("### Currency Conversion")
-    
-        base_currency = st.selectbox("Select base currency", country)
+            
+        base_currency = st.selectbox("Select base currency", country, index = country.index(target_currency_info))
         target_currency = st.selectbox("Select target currency", country)
     
         # Input field for the amount to convert
@@ -226,7 +227,7 @@ if st.session_state.open_session :
     if st.session_state.show_historical:
 
         # Historical exchange rate plot
-        st.write("### Historical Exchange Rate Trend")
+        st.write(f"### Historical Exchange Rate Trend : {base_currency} to {target_currency}")
     
         # Select date range for historical data
         start_date = st.date_input("Start date", datetime.date.today() - datetime.timedelta(days=30))
