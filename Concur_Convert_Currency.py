@@ -88,7 +88,6 @@ def get_data(base_currency, target_currency):
         if response.status_code in [200, 201, 202, 203]:
             return response.json()
         else:
-            st.write(base_currency, target_currency, url)
             st.error(f"Failed to retrieve data. Status code: {response.status_code}")
             return None
     except Exception as e:
@@ -184,8 +183,12 @@ if st.session_state.open_session :
     Use the main section to select currencies and convert amounts.
 
     [Currency information](#currency-info)  
+    Obtain key information to identify different currencies.
 
     [Historical exchange rate](#historical-exchange-rate-trend)
+    Visualize the evolution of the exchange rate over time,
+    and predict future variations with our **machine learning model** !
+
                      """)
     # SECTION 1 : Currency information
     
@@ -324,7 +327,7 @@ if st.session_state.open_session :
 
 else :
     # Streamlit UI for user authentication
-    st.title("User Authentication Example")
+    st.title("Welcome to ConCur !")
     
     menu = ["Login", "Sign Up"]
     choice = st.sidebar.selectbox("Menu", menu)
