@@ -6,7 +6,7 @@ This web application hosts three tools for querying and visualizing data from a 
 
 ## Application URL
 
-The application has been deployed using the Streamlit Community Cloud, and is available at [this URL]([https://www.data.gouv.fr](https://datacamp2024-iaxrg6qhvr39fgiksvpq4c.streamlit.app/)) 
+The application has been deployed using the Streamlit Community Cloud, and is available at [this URL]([https://www.data.gouv.fr](https://datacamp2024-iaxrg6qhvr39fgiksvpq4c.streamlit.app/) 
 
 ## How to use
 
