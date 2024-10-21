@@ -2,7 +2,7 @@
 
 ## Project description
 
-This dashboard hosts a complete collection of both linear, detailed insight and interactive visualizations on the subject of news coverage between 2005 and 2020.
+This web application hosts three tools for querying and visualizing data from a currency-based API, as well as operating currency conversion on a collection of almost 30 different currencies.
 
 ## Application URL
 
